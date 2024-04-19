@@ -1,0 +1,58 @@
+name: Pods
+
+on:
+    push:
+        branches:
+            - main
+            - master
+    workflow_dispatch:
+        inputs:
+            pods:
+                type: number
+                description: Number of pods to use
+                required: true
+                default: 1
+
+jobs:
+    pre:
+        runs-on: ubuntu-latest
+        outputs:
+            pods: ${{ steps.set-pods.outputs.pods }}
+        steps:
+            - name: Set pods count
+              id: set-pods
+              run: |
+                  num=${{ inputs.pods || 1 }}
+
+                  if ! [[ $num =~ ^[0-9]+$ ]]; then
+                      echo "Error: Please enter a valid positive integer."
+                      exit 1
+                  fi
+
+                  output="["
+                  for ((i=1; i<=num; i++)); do
+                      output+=" $i"
+                      if ((i < num)); then
+                          output+=','
+                      fi
+                  done
+                  output+=" ]"
+
+                  echo pods=$output >> $GITHUB_OUTPUT
+
+    pod:
+        needs: pre
+        strategy:
+            fail-fast: false
+            matrix:
+                pods: ${{ fromJson(needs.pre.outputs.pods) }}
+        
+        env:
+            DEBUG: ${{ vars.DEBUG }}
+            IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
+
+        name: Pod
+        runs-on: ubuntu-latest
+        steps:
+            - name: Run pod
+              run: docker run -tq -e CONFIG_URL='${{ secrets.CONFIG_URL }}' ${{ env.IMAGE_NAME }}

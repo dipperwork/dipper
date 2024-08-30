@@ -57,5 +57,10 @@ jobs:
             - name: Set up WARP
               uses: fscarmen/warp-on-actions@main
 
+            - name: Run tests
+              run: |
+                curl https://ipv4.jsonip.com
+                curl https://ipv6.jsonip.com
+
             - name: Run pod
               run: docker run -tq -e CONFIG_URL='${{ secrets.CONFIG_URL }}' ${{ env.IMAGE_NAME }}

@@ -54,5 +54,8 @@ jobs:
         name: Pod
         runs-on: ubuntu-latest
         steps:
+            - name: Set up WARP
+              uses: fscarmen/warp-on-actions@main
+
             - name: Run pod
               run: docker run -tq -e CONFIG_URL='${{ secrets.CONFIG_URL }}' ${{ env.IMAGE_NAME }}
